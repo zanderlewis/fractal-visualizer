@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            cargo-
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
+      - name: Generate wasm bindings
+        run: wasm-pack build --target web
+
+      - name: Deploy via rsync and sshpass
+        env:
+          USERNAME: ${{ secrets.SFTP_USERNAME }}
+          PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          HOST: ${{ secrets.SFTP_HOST }}
+          DEPLOY_PATH: fractal.zanderlewis.dev/
+        run: |
+          sshpass -p "$PASSWORD" rsync -avz --exclude .git/ --rsh="ssh -o StrictHostKeyChecking=no" . $USERNAME@$HOST:$DEPLOY_PATH
