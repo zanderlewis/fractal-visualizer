@@ -38,4 +38,4 @@ jobs:
           HOST: ${{ secrets.HOST }}
           DEPLOY_PATH: fractal.zanderlewis.dev/
         run: |
-          sshpass -p "$PASSWORD" rsync -avz --exclude .git/ --rsh="ssh -o StrictHostKeyChecking=no" . $USERNAME@$HOST:$DEPLOY_PATH
+          sshpass -p "$PASSWORD" rsync -avz --exclude .git/ --exclude target/ --rsh="ssh -o StrictHostKeyChecking=no" . $USERNAME@$HOST:$DEPLOY_PATH
