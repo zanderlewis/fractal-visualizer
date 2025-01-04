@@ -18,15 +18,11 @@ async function run() {
 
     let view = new ViewState(width, height, fractalType);
 
-    function calculateEscapeRadius(iterations) {
-        return 4.0; // Fixed escape radius to maintain consistent colors
-    }
-
     function drawFractal() {
         if (!needsRedraw) return;
         needsRedraw = false;
 
-        const escapeRadius = calculateEscapeRadius(maxIterations);
+        const escapeRadius = 4.0;
         const pixels = view.draw(maxIterations, escapeRadius);
         const imageData = new ImageData(new Uint8ClampedArray(pixels), width, height);
         ctx.putImageData(imageData, 0, 0);
@@ -70,10 +66,11 @@ async function run() {
 
     document.getElementById("fractalType").addEventListener("change", (event) => {
         const selectedType = event.target.value;
-        if (selectedType === "Mandelbrot") {
-            fractalType = FractalType.Mandelbrot;
-        } else if (selectedType === "Julia") {
-            fractalType = FractalType.Julia;
+        try {
+            fractalType = FractalType[selectedType];
+        } catch (e) {
+            console.error(e);
+            return;
         }
         view = new ViewState(width, height, fractalType);
         needsRedraw = true;
